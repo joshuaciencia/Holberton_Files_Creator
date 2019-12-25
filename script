@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+
+"""
+This script parses a Holberton School web page project
+and creates the neccesary files in your current working directory
+given the user id and password of the Holberton intranet
+Created by Joshua Hernandez from Holberton COL-cohort 9.
+"""
+
+from getpass import getpass
+from sys import argv
+import requests
+import re
+
+AUTH_REGEX = 'name="authenticity_token" value=.{90}'
+PARSE_REGEX = 'File: <code>.*<\/code>'
+
+LOGIN_URL = 'https://intranet.hbtn.io/auth/sign_in'
+
+def authenticate(id, pwd):
+    """ authenticates into Holberton intranet
+    in order to scrap the project page
+    """
+    s = requests.Session()
+    match = re.search(AUTH_REGEX, str(s.get(LOGIN_URL).content, 'utf-8'))
+    auth_token = None
+    if match:
+        auth_token = match.group()[33:-1]
+    else:
+        print("<ERROR>: Couldn't authenticate to " + LOGIN_URL)
+        exit(1)
+    response = s.post(
+            LOGIN_URL,
+            data = {
+                    'utf8':'✓',
+                    'authenticity_token': auth_token,
+                    'user[login]': id,
+                    'user[password]': pwd,
+                    'user[remember_me]': '0',
+                    'commit':'Log in'
+                }
+            )
+    return s
+
+def parse_project_page(cont):
+    """ parse the project page in search of
+    the files name """
+    matches = re.findall(PARSE_REGEX, str(cont, 'utf-8'))
+    count = 0
+    if matches:
+        for match in matches:
+            file_name = match[12:-7]
+            file_name.strip()
+            file = open(file_name, "a")
+            print("Created {}".format(file_name))
+            count += 1
+    return count
+
+if __name__ == '__main__':
+    if len(argv) != 2:
+        print("USAGE: ./script <url>")
+        exit(1)
+    url = argv[1]
+    id = input("Enter your Holberton School id: ")
+    pwd = getpass()
+    s = authenticate(id, pwd)
+    response = s.get(url).content
+    if len(response) < 4550:
+        print("<ERROR>: Unable to authenticate, wrong id or password")
+        exit(1)
+    else:
+        print("==========================")
+        print("Authenticated successfully")
+        print("==========================")
+
+    count = parse_project_page(response)
+    if count:
+        print("================")
+        print("Created {} files".format(count))
+        print("================")
+        print("******************************************")
+        print("** THANKS FOR USING THIS AWESOME SCRIPT **")
+        print("******************************************")
+    else:
+        print("No file names found.")
+        print("Are you sure <{}> is a Holberton project page?".format(url))
