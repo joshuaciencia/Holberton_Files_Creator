@@ -11,6 +11,7 @@ from getpass import getpass
 from sys import argv
 import requests
 import re
+import os
 
 AUTH_REGEX = 'name="authenticity_token" value=.{90}'
 PARSE_REGEX = 'File: <code>.*<\/code>'
@@ -50,10 +51,19 @@ def parse_project_page(cont):
     if matches:
         for match in matches:
             file_name = match[12:-7]
-            file_name.strip()
-            file = open(file_name, "a")
-            print("Created {}".format(file_name))
-            count += 1
+            files = file_name.split(",")
+            for f in files:
+                f = f.strip()
+                if "/" in f:
+                    try:
+
+                    os.makedirs(os.path.dirname(f))
+                    pass
+                else:
+                    file = open(f, "a")
+                    pass
+                print("Created {}".format(f))
+                count += 1
     return count
 
 if __name__ == '__main__':
