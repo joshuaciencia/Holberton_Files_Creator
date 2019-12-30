@@ -16,6 +16,7 @@ import os
 
 AUTH_REGEX = 'name="authenticity_token" value=.{90}'
 PARSE_REGEX = 'File: <code>.*<\/code>'
+TITLE_REGEX = '<title>.*<\/title>'
 LOGIN_URL = 'https://intranet.hbtn.io/auth/sign_in'
 
 def authenticate(id, pwd):
@@ -67,6 +68,14 @@ def parse_project_page(cont):
                     open(f, "a")
                     count += 1
                 print("Created {}".format(f))
+    if count:
+        match = re.search(TITLE_REGEX, str(cont, 'utf-8'))
+        if match:
+            f = open("README.md", "w")
+            f.write(match.group()[7:-8])
+            f.close()
+            count += 1
+            print("Created README.md")
     return count
 
 if __name__ == '__main__':
@@ -87,6 +96,7 @@ if __name__ == '__main__':
         print("==========================")
 
     count = parse_project_page(response)
+
     if count:
         print("================")
         print("Created {} files".format(count))
