@@ -2,8 +2,9 @@
 
 """
 This script parses a Holberton School web page project
-and creates the neccesary files in your current working directory
-given the user id and password of the Holberton intranet
+and creates the neccesary files and folders
+in your current working directory
+given the user id and password of the Holberton intranet,
 Created by Joshua Hernandez from Holberton COL-cohort 9.
 """
 
@@ -15,7 +16,6 @@ import os
 
 AUTH_REGEX = 'name="authenticity_token" value=.{90}'
 PARSE_REGEX = 'File: <code>.*<\/code>'
-
 LOGIN_URL = 'https://intranet.hbtn.io/auth/sign_in'
 
 def authenticate(id, pwd):
@@ -56,14 +56,17 @@ def parse_project_page(cont):
                 f = f.strip()
                 if "/" in f:
                     try:
-
-                    os.makedirs(os.path.dirname(f))
-                    pass
+                        os.makedirs(os.path.dirname(f))
+                    except OSError:
+                        pass
+                    name = f.split("/")[-1]
+                    if len(name):
+                        open(f, "a")
+                        count += 1
                 else:
-                    file = open(f, "a")
-                    pass
+                    open(f, "a")
+                    count += 1
                 print("Created {}".format(f))
-                count += 1
     return count
 
 if __name__ == '__main__':
